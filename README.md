@@ -158,8 +158,7 @@ Auto-Fail
 Fraud score greater than or equal to three:
 auto fail
 ```
-Balance < transaction amount
- Fraud Threshold: Score ≥ 3 = Payment Failed
+
 
  ```
 Example: Fraud Detection in Action

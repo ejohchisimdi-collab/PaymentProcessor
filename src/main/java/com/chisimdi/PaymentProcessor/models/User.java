@@ -22,7 +22,8 @@ public class User {
     private String role;
     private Boolean approved=false;
     @Version
-    private int version;
+    int version;
+
 
     public int getId() {
         return id;
@@ -70,5 +71,13 @@ public class User {
 
     public void setApproved(Boolean approved) {
         this.approved = approved;
+    }
+
+    public void setVersion(int version) {
+        this.version = version;
+    }
+
+    public int getVersion() {
+        return version;
     }
 }

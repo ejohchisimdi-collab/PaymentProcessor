@@ -8,6 +8,7 @@ import com.chisimdi.PaymentProcessor.repository.UserRepository;
 import com.chisimdi.PaymentProcessor.utils.LoginRequest;
 import com.chisimdi.PaymentProcessor.utils.LoginResponse;
 import jakarta.persistence.OptimisticLockException;
+import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -100,22 +101,27 @@ public class UserService {
         loginResponse.setToken(token);
         return loginResponse;
     }
-    public UserDTO approveUsers(int userId){
-        User user= userRepository.findByIdAndApproved(userId,false);
-        if (user==null){
-            throw new ResourceNotFoundException("User with id "+userId+" and approved status not approved not found");
 
+    public UserDTO approveUsers(int userId){
+        User user= userRepository.findById(userId).orElseThrow(()->new ResourceNotFoundException("user with id "+userId+" not found"));
+
+
+
+        if(user.getApproved()==false){
+            user.setApproved(true);
         }
         user.setApproved(true);
-        return toUserDTO(userRepository.save(user));
+        userRepository.save(user);
+        return toUserDTO(user);
 
     }
 
+@Transactional
     public UserDTO approveUsersWithRetries(int userId){
         int retries=0;
         while (retries<5){
             try {
-                approveUsers(userId);
+return       approveUsers(userId);
             }
             catch (OptimisticLockException e){
                 retries++;

@@ -88,7 +88,7 @@ public class PaymentService {
         User user = userRepository.findByIdAndRole(merchantId, "Merchant");
         Payment payment = new Payment();
         if (merchantSetting == null) {
-            throw new ResourceNotFoundException("Merchant with id " + merchantId + " not found");
+            throw new ResourceNotFoundException("MerchantSetting with merchant id " + merchantId + " not found");
         }
         if (user == null) {
             throw new ResourceNotFoundException("Merchant with id " + merchantId + " not found");

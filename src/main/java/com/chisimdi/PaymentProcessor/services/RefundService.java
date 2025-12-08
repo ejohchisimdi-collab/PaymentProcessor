@@ -77,7 +77,7 @@ public class RefundService {
         MerchantSetting merchantSetting = merchantSettingRepository.findByMerchantId(merchantId);
         Payment payment = paymentRepository.findById(paymentId).orElse(null);;
         if (merchantSetting == null) {
-            throw new ResourceNotFoundException("Merchant with with id " + merchantId + " does not exist");
+            throw new ResourceNotFoundException("Merchant setting with with merchant id " + merchantId + " does not exist");
         }
         if (payment == null) {
             throw new ResourceNotFoundException("Payment with id not found");

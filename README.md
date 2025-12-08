@@ -224,11 +224,12 @@ FROM eclipse-temurin:17-jre-alpine
 # Author
 - Chisimdi Ejoh
 - LinkedIn: www.linkedin.com/in/chisimdi-ejoh-057ba1382
-GitHub: @yourusername
+  
 
 # Acknowledgments
 - Spring Boot team for the excellent framework
 The open-source community
 - Stripe for the inspiration
 - Disclaimer: This is a demonstration project for portfolio purposes. For production use, additional security measures, PCI DSS compliance, and proper legal compliance are required.
+
 

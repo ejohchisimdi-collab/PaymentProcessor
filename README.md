@@ -93,7 +93,7 @@ docker-compose up -d
 ```
 git clone https://github.com/yourusername/payment-processor.git
 ```
-- cd payment-processor
+- cd PaymentProcessor
 - Set up MySQL database
 ```
 CREATE DATABASE paymentProcessor;
@@ -231,5 +231,6 @@ FROM eclipse-temurin:17-jre-alpine
 The open-source community
 - Stripe for the inspiration
 - Disclaimer: This is a demonstration project for portfolio purposes. For production use, additional security measures, PCI DSS compliance, and proper legal compliance are required.
+
 
 

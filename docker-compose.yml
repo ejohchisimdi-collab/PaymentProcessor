@@ -1,0 +1,51 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: paymentProcessor-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: paymentProcessor
+      MYSQL_USER: paymentuser
+      MYSQL_PASSWORD: paymentpass
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - payment-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  payment-api:
+    build:
+      context: .
+      dockerfile: dockerfile
+    container_name: payment-api
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/paymentProcessor
+      SPRING_DATASOURCE_USERNAME: paymentuser
+      SPRING_DATASOURCE_PASSWORD: paymentpass
+
+
+
+      JWT_SECRET: MySecretKeyThatIsAtLeast32CharactersForHmacAlgorithm
+
+      JWT_EXPIRATION: 86400000
+    ports:
+      - "8080:8080"
+    networks:
+      - payment-network
+
+
+volumes:
+  mysql-data:
+
+networks:
+  payment-network:
+    driver: bridge

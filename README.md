@@ -81,7 +81,7 @@ Reliability & Resilience
 ```
 git clone https://github.com/ejohchisimdi-collab/PaymentProcessor.git
 ```
-- cd payment-processor
+- cd PaymentProcessor
 - Start the application
 ```
 docker-compose up -d
@@ -231,6 +231,7 @@ FROM eclipse-temurin:17-jre-alpine
 The open-source community
 - Stripe for the inspiration
 - Disclaimer: This is a demonstration project for portfolio purposes. For production use, additional security measures, PCI DSS compliance, and proper legal compliance are required.
+
 
 
 

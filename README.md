@@ -123,6 +123,7 @@ export JWT_EXPIRATION=86400000
 -  Change this immediately in production!
 
 ## Payment Flow
+- To create a payment you need to have a merchant setting and merchant account. see Api endpoints for more info
 - Credit Card Payment Flow
 - Customer Payment → PENDING → VALIDATED → AUTHORIZED → CAPTURED → SETTLED
 ```

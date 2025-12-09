@@ -91,7 +91,7 @@ docker-compose up -d
 ### Option 2: Local Development
 - Clone and configure
 ```
-git clone https://github.com/yourusername/payment-processor.git
+ git clone https://github.com/ejohchisimdi-collab/PaymentProcessor.git
 ```
 - cd PaymentProcessor
 - Set up MySQL database

@@ -123,7 +123,7 @@ export JWT_EXPIRATION=86400000
 -  Change this immediately in production!
 
 ## Payment Flow
-- To create a payment you need to have a merchant setting and merchant account. see Api endpoints for more info
+- To create a payment you need to have a merchant setting and merchant account - See Api endpoints for more info
 - Credit Card Payment Flow
 - Customer Payment → PENDING → VALIDATED → AUTHORIZED → CAPTURED → SETTLED
 ```
@@ -214,7 +214,7 @@ FROM eclipse-temurin:17-jre-alpine
 
 
 # License
-- This project is licensed under the MIT License - see the LICENSE file for details.
+- This project is licensed under the MIT License 
 # Author
 - Chisimdi Ejoh
 - LinkedIn: www.linkedin.com/in/chisimdi-ejoh-057ba1382

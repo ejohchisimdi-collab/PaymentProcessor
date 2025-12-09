@@ -161,14 +161,7 @@ auto fail
 ```
 
 
- ```
-Example: Fraud Detection in Action
-// Scenario: Customer makes 3 rapid payments from different location
-Payment 1: Location = USA, Time = 10:00:00 → SUCCESS
-Payment 2: Location = USA, Time = 10:00:30 → SUCCESS  
-Payment 3: Location = France, Time = 10:00:45 → WARNING (different location +1)
-Payment 4: Location = France, Time = 10:00:55 → FAILED (high velocity +1, total = 2)
-```
+ 
 
 # Configuration
 

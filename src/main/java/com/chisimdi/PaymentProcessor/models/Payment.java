@@ -28,6 +28,8 @@ public class Payment {
     private List<String> warnings =new ArrayList<>();
     private LocalDateTime localDate=LocalDateTime.now();
     Boolean done=false;
+    @Version
+    private int version;
 
 
     public void setId(int id) {
@@ -121,5 +123,11 @@ public class Payment {
         this.amountLeft = amountLeft;
     }
 
+    public int getVersion() {
+        return version;
+    }
 
+    public void setVersion(int version) {
+        this.version = version;
+    }
 }

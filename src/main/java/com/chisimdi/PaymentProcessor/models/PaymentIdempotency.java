@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 @Entity
 public class PaymentIdempotency {
     @Id
-            @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
    private int id;
     @Column(unique = true)
    private String idempotencyKey;

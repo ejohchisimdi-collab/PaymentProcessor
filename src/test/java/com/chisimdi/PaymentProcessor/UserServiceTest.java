@@ -15,6 +15,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.Optional;
+
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.mockito.Mockito.*;
@@ -164,7 +166,7 @@ public class UserServiceTest {
 User user=new User();
 user.setApproved(false);
 
-when(userRepository.findByIdAndApproved(1,false)).thenReturn(user);
+when(userRepository.findById(1)).thenReturn(Optional.of(user));
 when(userRepository.save(user)).thenReturn(user);
 
 UserDTO userDTO=userService.approveUsers(1);
@@ -172,7 +174,7 @@ UserDTO userDTO=userService.approveUsers(1);
 assertThat(user.getApproved()).isEqualTo(true);
 
 verify(userRepository).save(user);
-verify(userRepository).findByIdAndApproved(1,false);
+verify(userRepository).findById(1);
     }
 
 

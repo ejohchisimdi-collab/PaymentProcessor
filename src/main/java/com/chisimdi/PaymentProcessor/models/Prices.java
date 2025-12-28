@@ -1,13 +1,11 @@
 package com.chisimdi.PaymentProcessor.models;
 
 import jakarta.persistence.*;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
-import javax.annotation.processing.Generated;
 import java.math.BigDecimal;
 
 @Entity
-public class Price {
+public class Prices {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
@@ -16,10 +14,10 @@ public class Price {
     @ManyToOne
     private User merchant;
     @Enumerated(EnumType.STRING)
-    private Interval interval;
+    private PaymentInterval paymentInterval;
     private int intervalCount;
-    @Column(unique = true)
     private String productName;
+    private int retryAttempts;
 
     public int getId() {
         return id;
@@ -57,16 +55,23 @@ public class Price {
         return intervalCount;
     }
 
-    public Interval getInterval() {
-        return interval;
+    public PaymentInterval getPaymentInterval() {
+        return paymentInterval;
     }
 
-    public void setInterval(Interval interval) {
-        this.interval = interval;
+    public void setPaymentInterval(PaymentInterval paymentInterval) {
+        this.paymentInterval = paymentInterval;
     }
 
     public void setIntervalCount(int intervalCount) {
         this.intervalCount = intervalCount;
     }
 
+    public int getRetryAttempts() {
+        return retryAttempts;
+    }
+
+    public void setRetryAttempts(int retryAttempts) {
+        this.retryAttempts = retryAttempts;
+    }
 }

@@ -1,6 +1,6 @@
 package com.chisimdi.PaymentProcessor.models;
 
-public enum Interval {
+public enum PaymentInterval {
     WEEKLY,
     MONTHLY,
     YEARLY

@@ -1,9 +1,6 @@
 package com.chisimdi.PaymentProcessor.models;
 
 import jakarta.persistence.Column;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.ManyToOne;
 
 import java.math.BigDecimal;
 
@@ -11,20 +8,21 @@ public class PriceDTO {
     private int id;
     private BigDecimal amount;
     private int merchantId;
-    private Interval interval;
+    private PaymentInterval interval;
     private int intervalCount;
     @Column(unique = true)
     private String productName;
+    private int retryAttempts;
 
     public void setIntervalCount(int intervalCount) {
         this.intervalCount = intervalCount;
     }
 
-    public void setInterval(Interval interval) {
+    public void setInterval(PaymentInterval interval) {
         this.interval = interval;
     }
 
-    public Interval getInterval() {
+    public PaymentInterval getInterval() {
         return interval;
     }
 
@@ -62,6 +60,14 @@ public class PriceDTO {
 
     public int getMerchantId() {
         return merchantId;
+    }
+
+    public void setRetryAttempts(int retryAttempts) {
+        this.retryAttempts = retryAttempts;
+    }
+
+    public int getRetryAttempts() {
+        return retryAttempts;
     }
 
 }

@@ -15,6 +15,8 @@ public class PaymentDTO {
     private Location location;
     private List<String> warnings =new ArrayList<>();
     private LocalDateTime localDate=LocalDateTime.now();
+    private PaymentType paymentType;
+    private int subscriptionId;
 
     public int getId() {
         return id;
@@ -86,6 +88,22 @@ public class PaymentDTO {
 
     public void setLocalDate(LocalDateTime localDate) {
         this.localDate = localDate;
+    }
+
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+
+    public void setSubscriptionId(int subscriptionId) {
+        this.subscriptionId = subscriptionId;
+    }
+
+    public int getSubscriptionId() {
+        return subscriptionId;
     }
 }
 

@@ -28,8 +28,14 @@ public class Payment {
     private List<String> warnings =new ArrayList<>();
     private LocalDateTime localDate=LocalDateTime.now();
     Boolean done=false;
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
     @Version
     private int version;
+    private int maxRetries;
+    private int retryAmount;
+    @ManyToOne
+    private Subscriptions subscriptions;
 
 
 
@@ -130,5 +136,29 @@ public class Payment {
 
     public void setVersion(int version) {
         this.version = version;
+    }
+
+    public PaymentType getPaymentType() {
+        return paymentType;
+    }
+
+    public void setPaymentType(PaymentType paymentType) {
+        this.paymentType = paymentType;
+    }
+
+    public int getMaxRetries() {
+        return maxRetries;
+    }
+
+    public void setMaxRetries(int maxRetries) {
+        this.maxRetries = maxRetries;
+    }
+
+    public void setSubscriptions(Subscriptions subscriptions) {
+        this.subscriptions = subscriptions;
+    }
+
+    public Subscriptions getSubscriptions() {
+        return subscriptions;
     }
 }

@@ -249,5 +249,6 @@ public enum Location {
                 Western_Sahara,
                 Yemen,
                 Zambia,
-                Zimbabwe
+                Zimbabwe,
+    Subscription_Location
 }

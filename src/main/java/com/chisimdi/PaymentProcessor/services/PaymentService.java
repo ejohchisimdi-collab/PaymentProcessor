@@ -33,11 +33,13 @@ public class PaymentService {
     private PaymentIdempotencyRepository paymentIdempotencyRepository;
     private WebHookService webHookService;
     private WebHookRetriesRepository webHookRetriesRepository;
+    private SubscriptionsRepository subscriptionsRepository;
 
     public PaymentService(PaymentRepository paymentRepository, MerchantAccountRepository merchantAccountRepository,
                           MerchantSettingRepository merchantSettingRepository, AccountRepository accountRepository, UserRepository userRepository, Random random, PaymentIdempotencyRepository paymentIdempotencyRepository,
                           WebHookService webHookService,
-                          WebHookRetriesRepository webHookRetriesRepository) {
+                          WebHookRetriesRepository webHookRetriesRepository,
+                          SubscriptionsRepository subscriptionsRepository) {
         this.paymentRepository = paymentRepository;
         this.merchantAccountRepository = merchantAccountRepository;
         this.merchantSettingRepository = merchantSettingRepository;
@@ -47,6 +49,7 @@ public class PaymentService {
         this.paymentIdempotencyRepository = paymentIdempotencyRepository;
         this.webHookService = webHookService;
         this.webHookRetriesRepository = webHookRetriesRepository;
+        this.subscriptionsRepository=subscriptionsRepository;
 
     }
 
@@ -72,6 +75,12 @@ public class PaymentService {
         }
         if (payment.getLocation() != null) {
             paymentDTO.setLocation(payment.getLocation());
+        }
+        if(payment.getPaymentType()!=null){
+            paymentDTO.setPaymentType(payment.getPaymentType());
+        }
+        if(payment.getSubscriptions()!=null){
+            paymentDTO.setSubscriptionId(paymentDTO.getSubscriptionId());
         }
         paymentDTO.setLocalDate(payment.getLocalDate());
         paymentDTO.setId(payment.getId());
@@ -111,6 +120,7 @@ public class PaymentService {
             payment.setPaymentStatus(PaymentStatus.PENDING);
         }
         log.debug("processing payment");
+        payment.setPaymentType(PaymentType.IMMEDIATE);
         payment.setAmount(amount);
         payment.setAmountLeft(amount);
         payment.setMerchant(merchantSetting.getMerchant());
@@ -144,6 +154,79 @@ public class PaymentService {
         }
 
         return paymentRepository.save(payment);
+
+
+    }
+    public Payment pendingProcessorForSubscriptions(int merchantId, int accountId, BigDecimal amount, Location location,int subscriptionId) {
+        log.info("Creating payments for merchant with id {}", merchantId);
+        MerchantSetting merchantSetting = merchantSettingRepository.findByMerchantId(merchantId);
+        Subscriptions subscriptions=subscriptionsRepository.findById(subscriptionId).orElseThrow(null);
+        Account account = accountRepository.findById(accountId).orElse(null);
+        if (account == null) {
+            throw new ResourceNotFoundException("Account with id " + accountId + " not found");
+        }
+        User user = userRepository.findByIdAndRole(merchantId, "Merchant");
+        Payment payment = new Payment();
+        if (merchantSetting == null) {
+            throw new ResourceNotFoundException("MerchantSetting with merchant id " + merchantId + " not found");
+        }
+        if (user == null) {
+            throw new ResourceNotFoundException("Merchant with id " + merchantId + " not found");
+        }
+        if (!account.getCurrency().equals(merchantSetting.getCurrency())) {
+            throw new InvalidCredentialsException("Accounts currency is incompatible with merchant currency");
+        }
+        if (amount.compareTo(merchantSetting.getMoneyLimit()) > 0) {
+            throw new InvalidCredentialsException("Amount specified is greater than the money limit");
+        }
+
+        if (account instanceof BankAccount) {
+            log.debug("processing payment type bank");
+            payment.setAccountType(AccountType.BANK);
+            payment.setPaymentStatus(PaymentStatus.CAPTURED);
+        }
+        if (account instanceof CreditCard) {
+            log.debug("processing payment type credit");
+            payment.setAccountType(AccountType.CREDIT);
+            payment.setPaymentStatus(PaymentStatus.PENDING);
+        }
+        log.debug("processing payment");
+        payment.setAmount(amount);
+        payment.setAmountLeft(amount);
+        payment.setMerchant(merchantSetting.getMerchant());
+        payment.setAccount(account);
+        payment.setLocation(location);
+        payment.setSubscriptions(subscriptions);
+        payment.setPaymentType(PaymentType.SUBSCRIPTION);
+        log.info("Payment processed successfully");
+
+        WebhookEvents webhookEvents = new WebhookEvents();
+        webhookEvents.setEventType(EventType.PAYMENT);
+        webhookEvents.setAmount(payment.getAmount());
+        webhookEvents.setPaymentStatus(payment.getPaymentStatus());
+        webhookEvents.setRefundStatus(null);
+        webhookEvents.setAccountType(payment.getAccountType());
+        webhookEvents.setMerchant(merchantSetting.getMerchant());
+        webhookEvents.setWarnings(payment.getWarnings());
+        try {
+            log.debug("Sending webhooks");
+            webHookService.sendWebhook(merchantSetting.getMerchantEndpoint(), webhookEvents);
+        } catch (RestClientException e) {
+            log.warn("Webhook failed to be delivered sending retries");
+            WebhookRetries webhookRetries = new WebhookRetries();
+            webhookRetries.setAccountType(payment.getAccountType());
+            webhookRetries.setWarnings(payment.getWarnings());
+            webhookRetries.setEventType(EventType.PAYMENT);
+            webhookRetries.setAmount(payment.getAmount());
+            webhookRetries.setPaymentStatus(payment.getPaymentStatus());
+            webhookRetries.setRefundStatus(null);
+            webhookRetries.setMerchant(merchantSetting.getMerchant());
+            webhookRetries.setAccountType(payment.getAccountType());
+            webHookRetriesRepository.save(webhookRetries);
+        }
+
+        paymentRepository.save(payment);
+        return payment;
 
 
     }
@@ -361,6 +444,26 @@ public class PaymentService {
         paymentIdempotencyRepository.save(paymentIdempotency);
         return toPaymentDTO(payment);
     }
+    public void processPaymentForSubscriptions(int merchantId, int accountId, BigDecimal amount, Location location,int subscription){
+       Payment payment= pendingProcessorForSubscriptions(merchantId, accountId, amount, location, subscription);
+        payment=validatedProcessor(payment);
+        payment=authorizationProcessor(payment);
+        payment=capturingProcessor(payment);
+        payment=settledProcessor(payment);
+        if(payment.getAccountType().equals(AccountType.CREDIT)&&payment.getPaymentStatus().equals(PaymentStatus.SETTLED)){
+            Subscriptions subscriptions= payment.getSubscriptions();
+            subscriptions.setPreviousDueDate(subscriptions.getPreviousDueDate());
+            subscriptions.setNextDueDate(null);
+            subscriptionsRepository.save(subscriptions);
+        }
+        if(payment.getAccountType().equals(AccountType.CREDIT)&&payment.getPaymentStatus().equals(PaymentStatus.FAILED)){
+            Subscriptions subscriptions= payment.getSubscriptions();
+            payment.setMaxRetries(subscriptions.getPrices().getRetryAttempts());
+            subscriptions.setSubscriptionStatus(SubscriptionStatus.PAST_DUE);
+            subscriptionsRepository.save(subscriptions);
+            paymentRepository.save(payment);
+        }
+    }
 
 
     public void bank() {
@@ -425,6 +528,19 @@ public class PaymentService {
                 accountRepository.save(account);
                 payment.setDone(true);
                 paymentRepository.save(payment);
+            }
+            if(payment.getPaymentType().equals(PaymentType.SUBSCRIPTION)&&payment.getPaymentStatus().equals(PaymentStatus.FAILED)){
+                Subscriptions subscriptions=payment.getSubscriptions();
+                subscriptions.setSubscriptionStatus(SubscriptionStatus.PAST_DUE);
+                payment.setMaxRetries(subscriptions.getPrices().getRetryAttempts());
+                paymentRepository.save(payment);
+                subscriptionsRepository.save(subscriptions);
+            }
+            if(payment.getPaymentType().equals(PaymentType.SUBSCRIPTION)&&payment.getPaymentStatus().equals(PaymentStatus.SETTLED)){
+                Subscriptions subscriptions=payment.getSubscriptions();
+                subscriptions.setPreviousDueDate(subscriptions.getNextDueDate());
+                subscriptions.setNextDueDate(null);
+                subscriptionsRepository.save(subscriptions);
             }
             MerchantSetting merchantSetting = merchantSettingRepository.findByMerchantId(payment.getMerchant().getId());
             WebhookEvents webhookEvents = new WebhookEvents();

@@ -3,8 +3,13 @@ package com.chisimdi.PaymentProcessor.services;
 import com.chisimdi.PaymentProcessor.Exceptions.ResourceNotFoundException;
 import com.chisimdi.PaymentProcessor.models.*;
 import com.chisimdi.PaymentProcessor.repository.*;
+import com.chisimdi.PaymentProcessor.utils.CustomUserPrincipal;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -128,5 +133,40 @@ public class SubscriptionsService {
             invoice.setPaid(true);
             invoiceRepository.save(invoice);
         }
+    }
+
+    public List<SubscriptionsDTO> findAllSubscriptions(int pageNumber,int size){
+        Page<Subscriptions>subscriptions=subscriptionsRepository.findAll(PageRequest.of(pageNumber, size));
+        List<SubscriptionsDTO>subscriptionsDTOS=new ArrayList<>();
+
+        for(Subscriptions s:subscriptions){
+            subscriptionsDTOS.add(toSubscriptionsDTO(s));
+        }
+        return subscriptionsDTOS;
+    }
+    public List<SubscriptionsDTO>findSubscriptionsByCustomer(int customerId,int pageNumber,int size){
+        Page<Subscriptions>subscriptions=subscriptionsRepository.findByCustomersId(customerId,PageRequest.of(pageNumber, size));
+        List<SubscriptionsDTO>subscriptionsDTOS=new ArrayList<>();
+
+        for(Subscriptions s:subscriptions){
+            subscriptionsDTOS.add(toSubscriptionsDTO(s));
+        }
+        return subscriptionsDTOS;
+    }
+    public List<SubscriptionsDTO>findByMerchant(int merchantId,int pageNumber,int size){
+        Page<Subscriptions>subscriptions=subscriptionsRepository.findByPricesMerchantId(merchantId,PageRequest.of(pageNumber, size));
+        List<SubscriptionsDTO>subscriptionsDTOS=new ArrayList<>();
+
+        for(Subscriptions s:subscriptions){
+            subscriptionsDTOS.add(toSubscriptionsDTO(s));
+        }
+        return subscriptionsDTOS;
+    }
+
+    public SubscriptionsDTO cancelSubscription(int userId,int subscriptionId){
+        Subscriptions subscriptions=subscriptionsRepository.findByIdAndCustomersId(subscriptionId,userId).orElseThrow(()->new ResourceNotFoundException("Subscription with id "+subscriptionId+" and customer Id "+userId+" not found"));
+        subscriptions.setSubscriptionStatus(SubscriptionStatus.CANCELLED);
+        subscriptionsRepository.save(subscriptions);
+        return toSubscriptionsDTO(subscriptions);
     }
 }
